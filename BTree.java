@@ -1,11 +1,16 @@
+import static org.junit.Assert.assertNotEquals;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
 
-public class BTree implements Set, Collection {
+public class BTree {
 
 	int degree;
+	int size;
 	BHolder root;
 
 	public BTree(int degree) throws Exception {
@@ -21,13 +26,23 @@ public class BTree implements Set, Collection {
 		if (root == null) {
 			root = new BHolder(degree);
 		}
+		size++;
 		BHolder current = root;
+
+		while (current.hasChildren()) {
+			if (current.getLast() <= item) {
+				current = current.getChildren().get(current.getChildren().size() - 1);
+				continue;
+			}
+
+		}
+
 		current.add(item);
 		if (current.size() == degree) {
 			rebalanceInsertion(current);
 		}
 
-		return false;
+		return true;
 	}
 
 	private void rebalanceInsertion(BHolder current) {
@@ -35,44 +50,67 @@ public class BTree implements Set, Collection {
 			BHolder left = new BHolder();
 			BHolder right = new BHolder();
 
-			int halfPoint = (current.size() - 1) / 2;
+			int halfPoint = current.size() / 2;
+			assertNotEquals(halfPoint, 0);
 			for (int i = 0; i < halfPoint; i++) {
 				right.add(current.popRight());
 			}
 
-			for (int i = 0; i < halfPoint; i++) {
+			while (current.size() != 1) {
 				left.add(current.popLeft());
 			}
 
+			if (current != root) {
+				current.getParent().add(current.getLast());
+				current = current.getParent();
+			}
+
+			if (current.hasChildren()) {
+				for (int i = 0; i < halfPoint; i++) {
+					left.addChild(current.popLeftChild());
+				}
+				while (current.hasChildren()) {
+					right.addChild(current.popRightChild());
+				}
+			}
 			current.addChild(left);
 			current.addChild(right);
-			left.setParent(current);
-			right.setParent(current);
+
 		}
 	}
 
 	@Override
 	public String toString() {
-		// return "BTree [degree=" + degree + ", root=" + root + "]";
 		if (root == null) {
 			return "";
 		}
 		StringBuilder s = new StringBuilder();
-		LinkedList<BHolder> queue = new LinkedList<>();
-		queue.add(root);
-		while (!queue.isEmpty()) {
-			LinkedList<BHolder> other = new LinkedList<>();
-			for (BHolder b : queue) {
-				other.addAll(b.children);
-				s.append(b + " ");
+		LinkedList<BHolder> holder = new LinkedList<>();
+		holder.add(root);
+
+		while (true) {
+
+			LinkedList<BHolder> children = new LinkedList<>();
+
+			while ( !holder.isEmpty()) {
+				BHolder b = holder.getFirst();
+				s.append(holder.getFirst().toString());
+				s.append(" | ");
+				children.addAll(b.getChildren());
+
+				holder.removeFirst();
+				
 			}
 			s.append('\n');
-			queue = other;
+
+			holder = children;
+			if (holder.isEmpty()) {
+				break;
+			}
 		}
 		return s.toString();
 	}
 
-	@Override
 	public boolean addAll(Collection c) {
 		// TODO Auto-generated method stub
 		for (Object object : c) {
@@ -81,81 +119,94 @@ public class BTree implements Set, Collection {
 		return false;
 	}
 
-	@Override
 	public void clear() {
 		// TODO Auto-generated method stub
 
 	}
 
-	@Override
 	public boolean contains(Object o) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public boolean containsAll(Collection c) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public boolean isEmpty() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public Iterator iterator() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public boolean remove(Object o) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public boolean removeAll(Collection c) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public boolean retainAll(Collection c) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public int size() {
 		// TODO Auto-generated method stub
-		return 0;
+		return size;
 	}
 
-	@Override
-	public Object[] toArray() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Object[] toArray(Object[] a) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
+//	@Override
+//	public Object[] toArray() {
+//		Object[] result = new Object[size()];
+//		int index = 0;
+//		LinkedList<BHolder> s = new LinkedList<>();
+//		s.add(root);
+//
+//		while (!s.isEmpty()) {
+//			if (s.getLast().hasChildren()) {
+//				LinkedList<BHolder> children = new LinkedList<>();
+//				for (BHolder b : s.getLast().getChildren()) {
+//					children.addFirst(b);
+//				}
+//				s.addAll(children);
+//			} else {
+//				ArrayList<Integer> list = s.getLast().list;
+//				for(int i = 0; i < list.size(); i++) {
+//					result[index] = list.get(i);
+//					index++;
+//				}
+//				s.removeLast();
+//			}
+//		}
+//
+//		return result;
+//
+//	}
+//
+//	@Override
+//	public Object[] toArray(Object[] a) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 
 	public static void main(String[] args) throws Exception {
 		BTree tree = new BTree(3);
 
 		for (int i = 0; i < 20; i++) {
 			tree.add(i);
-			System.out.println(tree);
+			 System.out.println(tree);
 		}
 
-		System.out.println(tree);
 	}
 
 	@Override

@@ -28,7 +28,7 @@ class BHolderTest {
 
 	@Test
 	void testAddChild() {
-		BHolder[] list = new BHolder[10];
+		BHolder[] list = new BHolder[100];
 		BHolder holder = new BHolder();
 		List<Integer> solution = new ArrayList<>();
 		for (int i = 1; i <= list.length; i++) {
@@ -40,12 +40,12 @@ class BHolderTest {
 			list[i] = new BHolder();
 			list[i].add(solution.get(i));
 			holder.addChild(list[i]);
-			System.out.println(holder.children);
+			System.out.println(holder.getChildren());
 		}
 
-		assertTrue(holder.children.size() == list.length);
+		assertTrue(holder.getChildren().size() == list.length);
 
-		assertTrue(isSorted(holder.children));
+		assertTrue(isSorted(holder.getChildren()));
 	}
 
 	private boolean isSorted(ArrayList<BHolder> children) {
