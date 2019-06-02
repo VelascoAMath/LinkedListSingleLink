@@ -152,6 +152,10 @@ public class BHolder {
 
 		assertTrue(false);
 	}
+	
+	public void removeChild(BHolder child) {
+		children.remove(child);
+	}
 
 	public void setParent(BHolder parent) {
 		checkChildren();

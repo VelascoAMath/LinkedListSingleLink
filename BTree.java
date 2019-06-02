@@ -60,11 +60,6 @@ public class BTree {
 				left.add(current.popLeft());
 			}
 
-			if (current != root) {
-				current.getParent().add(current.getLast());
-				current = current.getParent();
-			}
-
 			if (current.hasChildren()) {
 				for (int i = 0; i < halfPoint; i++) {
 					left.addChild(current.popLeftChild());
@@ -73,10 +68,63 @@ public class BTree {
 					right.addChild(current.popRightChild());
 				}
 			}
-			current.addChild(left);
-			current.addChild(right);
+
+			BHolder parent;
+			if (current == root) {
+				parent = new BHolder();
+				root = parent;
+			}
+
+			else {
+				parent = current.getParent();
+			}
+			parent.removeChild(current);
+
+			parent.addChild(left);
+			parent.addChild(right);
+			parent.add(current.getFirst());
+			current = parent;
+		}
+	}
+
+	public boolean contains(int item) {
+		if (root == null) {
+			return false;
+		}
+		BHolder current = root;
+		
+		if(!current.hasChildren()) {
+			return current.list.contains(item);
+		}
+
+		while (true) {
+			if (current.getLast() == item) {
+				return true;
+			}
+			if (current.getFirst() == item) {
+				return true;
+			}
+			if (item < current.getFirst()) {
+				current = current.getChildren().get(0);
+				continue;
+			}
+
+			if (current.getLast() < item) {
+				current = current.getChildren().get(current.getChildren().size() - 1);
+				continue;
+			}
+
+			for (int i = current.size() - 1; i >= 1; i--) {
+				if (current.list.get(i) == item) {
+					return true;
+				} else if (current.list.get(i) <= item && item < current.list.get(i)) {
+					current = current.getChildren().get(i);
+					break;
+				}
+			}
 
 		}
+
 	}
 
 	@Override
@@ -92,14 +140,14 @@ public class BTree {
 
 			LinkedList<BHolder> children = new LinkedList<>();
 
-			while ( !holder.isEmpty()) {
+			while (!holder.isEmpty()) {
 				BHolder b = holder.getFirst();
 				s.append(holder.getFirst().toString());
 				s.append(" | ");
 				children.addAll(b.getChildren());
 
 				holder.removeFirst();
-				
+
 			}
 			s.append('\n');
 
@@ -114,7 +162,7 @@ public class BTree {
 	public boolean addAll(Collection c) {
 		// TODO Auto-generated method stub
 		for (Object object : c) {
-			add(object);
+			add((int) object);
 		}
 		return false;
 	}
@@ -164,55 +212,48 @@ public class BTree {
 		return size;
 	}
 
+	// @Override
+	 public Object[] toArray() {
+	 Object[] result = new Object[size()];
+	 int index = 0;
+	 LinkedList<BHolder> s = new LinkedList<>();
+	 s.add(root);
 	
-//	@Override
-//	public Object[] toArray() {
-//		Object[] result = new Object[size()];
-//		int index = 0;
-//		LinkedList<BHolder> s = new LinkedList<>();
-//		s.add(root);
-//
-//		while (!s.isEmpty()) {
-//			if (s.getLast().hasChildren()) {
-//				LinkedList<BHolder> children = new LinkedList<>();
-//				for (BHolder b : s.getLast().getChildren()) {
-//					children.addFirst(b);
-//				}
-//				s.addAll(children);
-//			} else {
-//				ArrayList<Integer> list = s.getLast().list;
-//				for(int i = 0; i < list.size(); i++) {
-//					result[index] = list.get(i);
-//					index++;
-//				}
-//				s.removeLast();
-//			}
-//		}
-//
-//		return result;
-//
-//	}
-//
-//	@Override
-//	public Object[] toArray(Object[] a) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
+	 while (!s.isEmpty()) {
+	 if (s.getLast().hasChildren()) {
+	 LinkedList<BHolder> children = new LinkedList<>();
+	 for (BHolder b : s.getLast().getChildren()) {
+	 children.addFirst(b);
+	 }
+	 s.addAll(children);
+	 } else {
+	 ArrayList<Integer> list = s.getLast().list;
+	 for(int i = 0; i < list.size(); i++) {
+	 result[index] = list.get(i);
+	 index++;
+	 }
+	 s.removeLast();
+	 }
+	 }
+	
+	 return result;
+	
+	 }
+	//
+	// @Override
+	// public Object[] toArray(Object[] a) {
+	// // TODO Auto-generated method stub
+	// return null;
+	// }
 
 	public static void main(String[] args) throws Exception {
 		BTree tree = new BTree(3);
 
-		for (int i = 0; i < 20; i++) {
+		for (int i = 200; i >= 0; i--) {
 			tree.add(i);
-			 System.out.println(tree);
 		}
+		System.out.println(tree);
 
-	}
-
-	@Override
-	public boolean add(Object e) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 }
