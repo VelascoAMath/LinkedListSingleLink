@@ -1,11 +1,11 @@
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Set;
 
 public class BTree {
 
@@ -35,6 +35,17 @@ public class BTree {
 				continue;
 			}
 
+			if (item < current.getFirst()) {
+				current = current.getChildren().get(0);
+				continue;
+			}
+			for (int i = current.getChildren().size() - 1; i >= 1; i--) {
+				if (current.list.get(i - 1) <= item && item < current.list.get(i)) {
+					current = current.getChildren().get(i);
+					break;
+				}
+			}
+
 		}
 
 		current.add(item);
@@ -61,12 +72,16 @@ public class BTree {
 			}
 
 			if (current.hasChildren()) {
-				for (int i = 0; i < halfPoint; i++) {
-					left.addChild(current.popLeftChild());
-				}
-				while (current.hasChildren()) {
+
+				while(right.size() + 1 != right.getChildren().size()) {
 					right.addChild(current.popRightChild());
 				}
+				
+				while(left.size() + 1 != left.getChildren().size()) {
+					left.addChild(current.popRightChild());
+				}
+				
+				assertFalse(current.hasChildren());
 			}
 
 			BHolder parent;
@@ -92,12 +107,12 @@ public class BTree {
 			return false;
 		}
 		BHolder current = root;
-		
-		if(!current.hasChildren()) {
-			return current.list.contains(item);
-		}
 
 		while (true) {
+			if (!current.hasChildren()) {
+				return current.list.contains(item);
+			}
+
 			if (current.getLast() == item) {
 				return true;
 			}
@@ -117,7 +132,7 @@ public class BTree {
 			for (int i = current.size() - 1; i >= 1; i--) {
 				if (current.list.get(i) == item) {
 					return true;
-				} else if (current.list.get(i) <= item && item < current.list.get(i)) {
+				} else if (current.list.get(i - 1) <= item && item < current.list.get(i)) {
 					current = current.getChildren().get(i);
 					break;
 				}
@@ -144,6 +159,9 @@ public class BTree {
 				BHolder b = holder.getFirst();
 				s.append(holder.getFirst().toString());
 				s.append(" | ");
+				if (b.hasChildren()) {
+					assertEquals(b.list.size() + 1, b.getChildren().size());
+				}
 				children.addAll(b.getChildren());
 
 				holder.removeFirst();
@@ -213,32 +231,32 @@ public class BTree {
 	}
 
 	// @Override
-	 public Object[] toArray() {
-	 Object[] result = new Object[size()];
-	 int index = 0;
-	 LinkedList<BHolder> s = new LinkedList<>();
-	 s.add(root);
-	
-	 while (!s.isEmpty()) {
-	 if (s.getLast().hasChildren()) {
-	 LinkedList<BHolder> children = new LinkedList<>();
-	 for (BHolder b : s.getLast().getChildren()) {
-	 children.addFirst(b);
-	 }
-	 s.addAll(children);
-	 } else {
-	 ArrayList<Integer> list = s.getLast().list;
-	 for(int i = 0; i < list.size(); i++) {
-	 result[index] = list.get(i);
-	 index++;
-	 }
-	 s.removeLast();
-	 }
-	 }
-	
-	 return result;
-	
-	 }
+	public Object[] toArray() {
+		Object[] result = new Object[size()];
+		int index = 0;
+		LinkedList<BHolder> s = new LinkedList<>();
+		s.add(root);
+
+		while (!s.isEmpty()) {
+			if (s.getLast().hasChildren()) {
+				LinkedList<BHolder> children = new LinkedList<>();
+				for (BHolder b : s.getLast().getChildren()) {
+					children.addFirst(b);
+				}
+				s.addAll(children);
+			} else {
+				ArrayList<Integer> list = s.getLast().list;
+				for (int i = 0; i < list.size(); i++) {
+					result[index] = list.get(i);
+					index++;
+				}
+				s.removeLast();
+			}
+		}
+
+		return result;
+
+	}
 	//
 	// @Override
 	// public Object[] toArray(Object[] a) {
@@ -251,8 +269,8 @@ public class BTree {
 
 		for (int i = 200; i >= 0; i--) {
 			tree.add(i);
+			System.out.println(tree);
 		}
-		System.out.println(tree);
 
 	}
 
